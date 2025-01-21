@@ -84,8 +84,8 @@ Visit `http://localhost:3000` in your browser to use the application.
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="assets/homepage.png" alt="Homepage" width="600"/>
-  <img src="assets/extraction.png" alt="Text Extraction" width="600"/>
+  <img src="assets/Homepage.png" alt="Homepage" width="600"/>
+  <img src="assets/Extraction.png" alt="Text Extraction" width="600"/>
 </div>
 
 ## 🤝 Contributing
