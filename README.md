@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="100%" src="https://github.com/yourusername/pdf-extractor/raw/main/assets/banner.png" alt="PDF Extractor Banner"/>
+  <img width="100%" src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20Facing%20Up.png" alt="PDF Extractor Banner"/>
   
   <h1>PDF Extractor</h1>
   
