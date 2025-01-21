@@ -1,8 +1,15 @@
-# PDF Extractor 📄
-
-A powerful web application for extracting and analyzing text from PDF files, built with React and Node.js.
-
-![Project Banner](assets/banner.png)
+<div align="center">
+  <img width="100%" src="https://github.com/yourusername/pdf-extractor/raw/main/assets/banner.png" alt="PDF Extractor Banner"/>
+  
+  <h1>PDF Extractor</h1>
+  
+  <div>
+    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React"/>
+    <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
+    <img src="https://img.shields.io/badge/Express.js-404D59?style=for-the-badge" alt="Express.js"/>
+    <img src="https://img.shields.io/badge/Material--UI-0081CB?style=for-the-badge&logo=material-ui&logoColor=white" alt="Material-UI"/>
+  </div>
+</div>
 
 ## ✨ Features
 
@@ -85,6 +92,7 @@ Visit `http://localhost:3000` in your browser to use the application.
 
 <div align="center">
   <img src="pdf-extractor/assets/Homepage.png" alt="Homepage" width="600"/>
+   <br><br>
   <img src="pdf-extractor/assets/Extraction.png" alt="Text Extraction" width="600"/>
 </div>
 
@@ -113,7 +121,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-Your Name - [sahilmit2002@gmail.com](mailto:sahilmit2002@gmail.com)
+Sahil Mittal - [sahilmit2002@gmail.com](mailto:sahilmit2002@gmail.com)
 
 Project Link: [https://github.com/SazzHub221/pdf-extractor](https://github.com/SazzHub221/pdf-extractor)
 
@@ -127,5 +135,5 @@ Project Link: [https://github.com/SazzHub221/pdf-extractor](https://github.com/S
 ---
 
 <div align="center">
-  Made with ❤️ by [Sahil Mittal]
+  Made with ❤️ by Sahil Mittal
 </div>
