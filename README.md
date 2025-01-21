@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="100%" src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20Facing%20Up.png" alt="PDF Extractor Banner"/>
+  <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=200&section=header&text=PDF%20Extractor&fontSize=80&fontAlignY=35&animation=twinkling&fontColor=white" alt="PDF Extractor Banner"/>
   
   <h1>PDF Extractor</h1>
   
