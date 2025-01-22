@@ -11,7 +11,7 @@ const app = express();
 
 app.use(cors({
   origin: [
-    'https://resume-extractor-frontend.vercel.app',
+    'https://resume-extractor-frontend.onrender.com',
     'http://localhost:3000'
   ],
   credentials: true,
