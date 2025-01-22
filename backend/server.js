@@ -9,27 +9,20 @@ const connectDB = require('./config/db');
 
 const app = express();
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://resume-extractor-frontend.vercel.app',
-  'https://resume-extractor-backend.onrender.com'
-];
-
+// CORS Configuration
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: [
+    'http://localhost:3000',
+    'https://resume-extractor-frontend.vercel.app'
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-})); 
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type']
+}));
+
 app.use(express.json());
 
-// Configure multer with file filtering
+// Multer Configuration
 const storage = multer.diskStorage({
   destination: "uploads/",
   filename: (req, file, cb) => {
@@ -52,7 +45,7 @@ const upload = multer({
   }
 });
 
-// Cleanup old uploads periodically
+// Cleanup Function
 const cleanupUploads = () => {
   const uploadsDir = path.join(__dirname, "uploads");
   fs.readdir(uploadsDir, (err, files) => {
@@ -62,8 +55,6 @@ const cleanupUploads = () => {
       const filePath = path.join(uploadsDir, file);
       fs.stat(filePath, (err, stats) => {
         if (err) return console.error(err);
-        
-        // Delete files older than 1 hour
         if (Date.now() - stats.mtime.getTime() > 3600000) {
           fs.unlink(filePath, err => {
             if (err) console.error(err);
@@ -74,23 +65,18 @@ const cleanupUploads = () => {
   });
 };
 
-setInterval(cleanupUploads, 3600000); // Run cleanup every hour
+setInterval(cleanupUploads, 3600000);
 
+// Upload Endpoint
 app.post("/api/upload", upload.single("pdf"), (req, res) => {
-
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-
   if (!req.file) {
     return res.status(400).json({ error: "No PDF file uploaded" });
   }
 
   const pdfPath = req.file.path;
-  const pythonProcess = spawn("python", [
-    path.join(__dirname, "python", "extractor.py"),
-    pdfPath
-  ]);
-
+  const pythonScript = path.join(__dirname, "python", "extractor.py");
+  
+  const pythonProcess = spawn("python", [pythonScript, pdfPath]);
   let resultData = "";
 
   pythonProcess.stdout.on("data", (data) => {
@@ -103,7 +89,6 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
 
   pythonProcess.on("close", (code) => {
     try {
-      // Clean up the uploaded file
       fs.unlink(pdfPath, (err) => {
         if (err) console.error(`Error deleting file: ${err}`);
       });
@@ -115,20 +100,38 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
         });
       }
 
-      // Parse the JSON result
-      const parsedData = JSON.parse(resultData);
+      const parsedData = JSON.parse(resultData.replace(/'/g, '"'));
       res.json(parsedData);
     } catch (error) {
-      console.error("Error parsing Python output:", error);
+      console.error("Error processing result:", error);
       res.status(500).json({ 
-        error: "Error processing result",
+        error: "Failed to process PDF",
         details: error.message 
       });
     }
   });
+
+  pythonProcess.on("error", (err) => {
+    console.error("Python process error:", err);
+    res.status(500).json({ 
+      error: "Failed to start processing",
+      details: err.message 
+    });
+  });
 });
 
-// Error handling middleware
+// Error Handlers
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ 
+        error: 'File size is too large. Max size is 5MB' 
+      });
+    }
+  }
+  next(err);
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ 
@@ -137,18 +140,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File size is too large. Max size is 5MB' });
-    }
-  }
-  res.status(500).json({ error: err.message });
-});
-
+// Server Startup
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
 
+// Database Connection
 connectDB();

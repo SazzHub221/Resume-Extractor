@@ -126,6 +126,7 @@ function App() {
       setData(response.data);
     } catch (err) {
       setError(err.response?.data?.error || "An error occurred while processing the file");
+      console.error('Upload Error:', err);
     } finally {
       setLoading(false);
     }
