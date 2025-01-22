@@ -5,6 +5,7 @@ const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 require('dotenv').config();
+const connectDB = require('./config/db');
 
 const app = express();
 
@@ -111,3 +112,5 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+connectDB();
