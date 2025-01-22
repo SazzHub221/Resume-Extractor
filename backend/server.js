@@ -45,7 +45,6 @@ app.post("/api/upload", upload.single("pdf"), async (req, res) => {
     }
 
     const pdfPath = req.file.path;
-    // Update Python script path for production
     const pythonScript = path.join(__dirname, "python", "extractor.py");
     
     console.log('PDF Path:', pdfPath);
@@ -68,6 +67,11 @@ app.post("/api/upload", upload.single("pdf"), async (req, res) => {
       console.error('Python Error:', data.toString());
     });
 
+    // Capture process launch errors (e.g., Python not found)
+    pythonProcess.on("error", (err) => {
+      console.error('Failed to start Python process:', err);
+    });
+
     pythonProcess.on("close", (code) => {
       // Clean up file
       fs.unlink(pdfPath, (err) => {
@@ -79,22 +83,21 @@ app.post("/api/upload", upload.single("pdf"), async (req, res) => {
         console.error('Error output:', errorData);
         return res.status(500).json({
           error: "PDF processing failed",
-          details: errorData
+          details: errorData || `Python process exited with code ${code}`
         });
       }
 
       try {
         const parsedData = JSON.parse(resultData.replace(/'/g, '"'));
-        res.json(parsedData);
+        return res.json(parsedData);
       } catch (error) {
         console.error('Parse error:', error);
-        res.status(500).json({
+        return res.status(500).json({
           error: "Failed to parse results",
           details: error.message
         });
       }
     });
-
   } catch (error) {
     console.error('Server error:', error);
     res.status(500).json({
