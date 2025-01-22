@@ -11,7 +11,8 @@ const app = express();
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://resume-extractor-frontend.vercel.app'
+  'https://resume-extractor-frontend.vercel.app',
+  'https://resume-extractor-backend.onrender.com'
 ];
 
 app.use(cors({
