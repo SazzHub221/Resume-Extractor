@@ -4,11 +4,17 @@ const multer = require("multer");
 const { spawn } = require("child_process");
 const path = require("path");
 const fs = require("fs");
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+require('dotenv').config();
+const connectDB = require('./config/db');
 
 const app = express();
+
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, 'http://localhost:3000'],
+  origin: [
+    process.env.FRONTEND_URL, 
+    'http://localhost:3000',
+    'https://resume-extractor-phi.vercel.app'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -74,64 +80,39 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
   ]);
 
   let resultData = "";
-  let errorData = "";
 
   pythonProcess.stdout.on("data", (data) => {
-    try {
-      // Clean the output string before parsing
-      const cleanedData = data.toString()
-        .replace(/[\u200b\ufeff\u200e]/g, '') // Remove zero-width spaces
-        .replace(/[\n\r\t]/g, '') // Remove newlines, carriage returns, tabs
-        .replace(/\bNaN\b/g, 'null') // Replace NaN with null
-        .replace(/\bInfinity\b/g, 'null') // Replace Infinity with null
-        .replace(/\bundefined\b/g, 'null') // Replace undefined with null
-        .replace(/'/g, '"') // Replace single quotes with double quotes
-        .replace(/\bNone\b/g, 'null') // Replace Python None with null
-        .replace(/\bTrue\b/g, 'true') // Replace Python True with true
-        .replace(/\bFalse\b/g, 'false') // Replace Python False with false
-        .trim();
-
-      try {
-        // Try to parse the JSON
-        const jsonData = JSON.parse(cleanedData);
-        resultData = jsonData;
-      } catch (parseError) {
-        console.error('JSON Parse Error:', parseError);
-        console.error('Cleaned Data:', cleanedData);
-        resultData = { 
-          error: 'Error parsing data from Python script',
-          details: parseError.message
-        };
-      }
-    } catch (error) {
-      console.error('Error processing Python output:', error);
-      console.error('Raw output:', data.toString());
-      resultData = { 
-        error: 'Error processing Python output',
-        details: error.message
-      };
-    }
+    resultData += data.toString();
   });
 
   pythonProcess.stderr.on("data", (data) => {
-    errorData += data.toString();
     console.error(`Python error: ${data}`);
   });
 
   pythonProcess.on("close", (code) => {
-    // Delete the uploaded file after processing
-    fs.unlink(pdfPath, (err) => {
-      if (err) console.error(`Error deleting file: ${err}`);
-    });
+    try {
+      // Clean up the uploaded file
+      fs.unlink(pdfPath, (err) => {
+        if (err) console.error(`Error deleting file: ${err}`);
+      });
 
-    if (code !== 0) {
-      return res.status(500).json({ 
-        error: "Processing error", 
-        details: errorData 
+      if (code !== 0) {
+        return res.status(500).json({ 
+          error: "Processing error", 
+          details: resultData 
+        });
+      }
+
+      // Parse the JSON result
+      const parsedData = JSON.parse(resultData);
+      res.json(parsedData);
+    } catch (error) {
+      console.error("Error parsing Python output:", error);
+      res.status(500).json({ 
+        error: "Error processing result",
+        details: error.message 
       });
     }
-
-    res.json(resultData);
   });
 });
 
@@ -149,3 +130,5 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Backend server running on http://localhost:${PORT}`);
 });
+
+connectDB();

@@ -9,6 +9,7 @@ from pathlib import Path
 from gemini_service import GeminiService
 from dotenv import load_dotenv
 import os
+import fitz  # PyMuPDF
 
 # Configure logging
 logging.basicConfig(
@@ -443,9 +444,62 @@ class PDFExtractor:
                 return match.group(1).strip()
         return ""
 
+def extract_text_from_pdf(pdf_path):
+    try:
+        # Check if file exists
+        if not os.path.exists(pdf_path):
+            return json.dumps({"error": "PDF file not found"})
+
+        # Open the PDF
+        doc = fitz.open(pdf_path)
+        
+        # Extract text from all pages
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        
+        # Close the document
+        doc.close()
+
+        # Process the extracted text
+        # This is a simplified example - modify according to your needs
+        result = {
+            "personal": {
+                "name": "Example Name",  # Add your extraction logic
+                "email": "example@email.com",
+                "phone": "123-456-7890",
+                "location": "City, Country"
+            },
+            "education": {
+                "degree": "Bachelor's",
+                "major": "Computer Science",
+                "university": "Example University",
+                "cgpa": "3.8",
+                "graduationYear": "2023"
+            },
+            "experience": [
+                {
+                    "position": "Software Engineer",
+                    "company": "Tech Company",
+                    "duration": "2020-2023",
+                    "achievements": ["Achievement 1", "Achievement 2"]
+                }
+            ],
+            "skills": {
+                "programming": ["Python", "JavaScript", "Java"],
+                "frameworks": ["React", "Node.js", "Django"],
+                "tools": ["Git", "Docker", "AWS"]
+            }
+        }
+
+        return json.dumps(result)
+
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
 def main():
-    if len(sys.argv) != 2:
-        logger.error("Usage: python extractor.py <pdf_path>")
+    if len(sys.argv) < 2:
+        print(json.dumps({"error": "No PDF path provided"}))
         sys.exit(1)
 
     try:

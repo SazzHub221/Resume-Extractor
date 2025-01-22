@@ -137,29 +137,29 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const renderCategoryData = (category, categoryData) => {
+  const renderCategoryData = (category, categoryData, index) => {
     const fields = categoryData.fields.filter(field => data[field]);
     if (fields.length === 0) return null;
 
-    const renderExperience = (exp) => (
-      <div className="experience-item">
+    const renderExperience = (exp, index) => (
+      <div key={`exp-${index}`} className="experience-item">
         <h4>{exp.position} at {exp.company}</h4>
         <p className="duration">{exp.duration}</p>
         <ul className="achievements-list">
           {exp.achievements.map((achievement, i) => (
-            <li key={i}>{achievement}</li>
+            <li key={`achievement-${index}-${i}`}>{achievement}</li>
           ))}
         </ul>
       </div>
     );
 
-    const renderProject = (project) => (
-      <div className="project-item">
+    const renderProject = (project, index) => (
+      <div key={`project-${index}`} className="project-item">
         <h4>{project.name}</h4>
         <p>{project.description}</p>
         <div className="technologies">
           {project.technologies.map((tech, i) => (
-            <span key={i} className="tech-tag">{tech}</span>
+            <span key={`tech-${index}-${i}`} className="tech-tag">{tech}</span>
           ))}
         </div>
       </div>
@@ -301,33 +301,33 @@ function App() {
     );
 
     return (
-      <div key={category} className="data-category">
+      <div key={`category-${category}`} className="data-category">
         <h3>
           <span className="category-icon">{categoryData.icon}</span>
           {categoryData.title}
         </h3>
         <div className="category-grid">
-          {fields.map(field => {
+          {fields.map((field, fieldIndex) => {
             const value = data[field];
             
             return (
-              <div key={field} className={`data-item ${field}-item`}>
+              <div key={`${category}-${field}-${fieldIndex}`} className={`data-item ${field}-item`}>
                 {field === 'experience' ? (
                   <div className="experience-list">
-                    {value.map((exp, i) => renderExperience(exp))}
+                    {value.map((exp, i) => renderExperience(exp, i))}
                   </div>
                 ) : field === 'projects' ? (
                   <div className="projects-list">
-                    {value.map((project, i) => renderProject(project))}
+                    {value.map((project, i) => renderProject(project, i))}
                   </div>
                 ) : field === 'skills' ? (
                   <div className="skills-categories">
-                    {Object.entries(value).map(([category, skills]) => (
-                      <div key={category} className="skill-category">
+                    {Object.entries(value).map(([category, skills], i) => (
+                      <div key={`skill-category-${i}`} className="skill-category">
                         <h4>{category}</h4>
                         <div className="skills-list">
-                          {skills.map((skill, i) => (
-                            <span key={i} className="skill-tag">{skill}</span>
+                          {skills.map((skill, j) => (
+                            <span key={`skill-${i}-${j}`} className="skill-tag">{skill}</span>
                           ))}
                         </div>
                       </div>
@@ -336,7 +336,7 @@ function App() {
                 ) : field === 'certifications' ? (
                   <div className="certifications-list">
                     {value.map((cert, i) => (
-                      <div key={i} className="certification-item">
+                      <div key={`cert-${i}`} className="certification-item">
                         <h4>{cert.name}</h4>
                         <p>{cert.issuer} - {cert.date}</p>
                       </div>
@@ -417,8 +417,8 @@ function App() {
           <div className="results" ref={resultsRef}>
             <h2>Extracted Data</h2>
             <div className="categories-container">
-              {Object.entries(dataCategories).map(([category, categoryData]) => 
-                renderCategoryData(category, categoryData)
+              {Object.entries(dataCategories).map(([category, categoryData], index) => 
+                renderCategoryData(category, categoryData, index)
               )}
             </div>
             
