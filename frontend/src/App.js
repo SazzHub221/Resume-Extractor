@@ -120,7 +120,7 @@ function App() {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        withCredentials: false
+        withCredentials: true
       });
       setData(response.data);
     } catch (err) {

@@ -9,12 +9,19 @@ const connectDB = require('./config/db');
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://resume-extractor-frontend.vercel.app'
+];
+
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL, 
-    'http://localhost:3000',
-    'https://resume-extractor-frontend.vercel.app/'
-  ],
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -121,6 +128,14 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
 });
 
 // Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    error: 'Internal Server Error',
+    message: err.message 
+  });
+});
+
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
