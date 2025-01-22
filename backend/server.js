@@ -69,6 +69,10 @@ const cleanupUploads = () => {
 setInterval(cleanupUploads, 3600000); // Run cleanup every hour
 
 app.post("/api/upload", upload.single("pdf"), (req, res) => {
+
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+
   if (!req.file) {
     return res.status(400).json({ error: "No PDF file uploaded" });
   }

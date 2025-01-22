@@ -71,7 +71,7 @@ const formatFieldName = (field) => {
 };
 
 const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://pdf-extractor-backend.vercel.app/api/upload'  
+  ? 'https://resume-extractor-backend.onrender.com/api/upload'  
   : 'http://localhost:3001/api/upload';
 
 
