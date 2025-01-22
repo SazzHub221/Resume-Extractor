@@ -93,9 +93,9 @@ Visit `http://localhost:3000` in your browser to use the application.
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="pdf-extractor/assets/Homepage.png" alt="Homepage" width="600"/>
+  <img src="assets/Homepage.png" alt="Homepage" width="600"/>
    <br><br>
-  <img src="pdf-extractor/assets/Extraction.png" alt="Text Extraction" width="600"/>
+  <img src="assets/Extraction.png" alt="Text Extraction" width="600"/>
 </div>
 
 ## 🤝 Contributing
