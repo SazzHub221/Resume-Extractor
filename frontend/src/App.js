@@ -111,7 +111,7 @@ function App() {
     formData.append("pdf", file);
 
     try {
-      const response = await axios.post("https://resume-extractor-phi.vercel.app/api/upload", formData, {
+      const response = await axios.post("https://resume-extractor-frontend.vercel.app/api/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
