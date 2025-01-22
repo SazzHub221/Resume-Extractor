@@ -70,6 +70,11 @@ const formatFieldName = (field) => {
     .replace(/^./, str => str.toUpperCase());
 };
 
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://pdf-extractor-backend.vercel.app/api/upload'  
+  : 'http://localhost:3001/api/upload';
+
+
 function App() {
   const [file, setFile] = useState(null);
   const [data, setData] = useState(null);
@@ -111,10 +116,11 @@ function App() {
     formData.append("pdf", file);
 
     try {
-      const response = await axios.post("https://resume-extractor-frontend.vercel.app/api/upload", formData, {
+      const response = await axios.post(API_URL, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: false
       });
       setData(response.data);
     } catch (err) {
