@@ -9,108 +9,126 @@ const connectDB = require('./config/db');
 
 const app = express();
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)){
-    fs.mkdirSync(uploadsDir);
-}
-
-// Updated CORS
 app.use(cors({
-  origin: ['https://resume-extractor-frontend.vercel.app', 'http://localhost:3000'],
-  methods: ['POST', 'GET', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
-  credentials: false
-}));
-
+  origin: [
+    process.env.FRONTEND_URL, 
+    'http://localhost:3000',
+    'https://resume-extractor-phi.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+})); 
 app.use(express.json());
 
-// Updated Multer config
+// Configure multer with file filtering
 const storage = multer.diskStorage({
-  destination: uploadsDir,
+  destination: "uploads/",
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + '.pdf');
   }
 });
 
 const upload = multer({ 
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
 });
 
-// Updated upload endpoint
-app.post("/api/upload", upload.single("pdf"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No PDF file uploaded" });
-    }
-
-    const pdfPath = req.file.path;
-    const pythonScript = path.join(__dirname, "python", "extractor.py");
+// Cleanup old uploads periodically
+const cleanupUploads = () => {
+  const uploadsDir = path.join(__dirname, "uploads");
+  fs.readdir(uploadsDir, (err, files) => {
+    if (err) return console.error(err);
     
-    console.log('PDF Path:', pdfPath);
-    console.log('Python Script Path:', pythonScript);
-
-    if (!fs.existsSync(pythonScript)) {
-      throw new Error(`Python script not found at: ${pythonScript}`);
-    }
-
-    const pythonProcess = spawn("python", [pythonScript, pdfPath]);
-    let resultData = "";
-    let errorData = "";
-
-    pythonProcess.stdout.on("data", (data) => {
-      resultData += data.toString();
+    files.forEach(file => {
+      const filePath = path.join(uploadsDir, file);
+      fs.stat(filePath, (err, stats) => {
+        if (err) return console.error(err);
+        
+        // Delete files older than 1 hour
+        if (Date.now() - stats.mtime.getTime() > 3600000) {
+          fs.unlink(filePath, err => {
+            if (err) console.error(err);
+          });
+        }
+      });
     });
+  });
+};
 
-    pythonProcess.stderr.on("data", (data) => {
-      errorData += data.toString();
-      console.error('Python Error:', data.toString());
-    });
+setInterval(cleanupUploads, 3600000); // Run cleanup every hour
 
-    // Capture process launch errors (e.g., Python not found)
-    pythonProcess.on("error", (err) => {
-      console.error('Failed to start Python process:', err);
-    });
+app.post("/api/upload", upload.single("pdf"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No PDF file uploaded" });
+  }
 
-    pythonProcess.on("close", (code) => {
-      // Clean up file
+  const pdfPath = req.file.path;
+  const pythonProcess = spawn("python", [
+    path.join(__dirname, "python", "extractor.py"),
+    pdfPath
+  ]);
+
+  let resultData = "";
+
+  pythonProcess.stdout.on("data", (data) => {
+    resultData += data.toString();
+  });
+
+  pythonProcess.stderr.on("data", (data) => {
+    console.error(`Python error: ${data}`);
+  });
+
+  pythonProcess.on("close", (code) => {
+    try {
+      // Clean up the uploaded file
       fs.unlink(pdfPath, (err) => {
-        if (err) console.error('Cleanup error:', err);
+        if (err) console.error(`Error deleting file: ${err}`);
       });
 
       if (code !== 0) {
-        console.error('Process exited with code:', code);
-        console.error('Error output:', errorData);
-        return res.status(500).json({
-          error: "PDF processing failed",
-          details: errorData || `Python process exited with code ${code}`
+        return res.status(500).json({ 
+          error: "Processing error", 
+          details: resultData 
         });
       }
 
-      try {
-        const parsedData = JSON.parse(resultData.replace(/'/g, '"'));
-        return res.json(parsedData);
-      } catch (error) {
-        console.error('Parse error:', error);
-        return res.status(500).json({
-          error: "Failed to parse results",
-          details: error.message
-        });
-      }
-    });
-  } catch (error) {
-    console.error('Server error:', error);
-    res.status(500).json({
-      error: "Server error",
-      details: error.message
-    });
+      // Parse the JSON result
+      const parsedData = JSON.parse(resultData);
+      res.json(parsedData);
+    } catch (error) {
+      console.error("Error parsing Python output:", error);
+      res.status(500).json({ 
+        error: "Error processing result",
+        details: error.message 
+      });
+    }
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File size is too large. Max size is 5MB' });
+    }
   }
+  res.status(500).json({ error: err.message });
 });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Backend server running on http://localhost:${PORT}`);
 });
 
 connectDB();

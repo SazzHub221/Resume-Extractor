@@ -331,14 +331,17 @@ class PDFExtractor:
             summary.append(sections['objective'].strip())
         
         if sections['experience']:
-            exp_summary = f"Has experience in {sections['experience'].split('\n')[0].strip()}"
+            experience_text = sections['experience'].split('\n')[0].strip()
+            exp_summary = f"Has experience in {experience_text}"
             summary.append(exp_summary)
         
         if sections['skills']:
             skills = self.extract_technical_skills(sections['skills'])
             if skills:
-                skills_summary = f"Skilled in {', '.join(skills[:5])}"
-                if len(skills) > 5:
+                skills_list = list(skills.values())[0] if isinstance(skills, dict) else skills
+                skills_sample = skills_list[:5] if isinstance(skills_list, list) else []
+                skills_summary = f"Skilled in {', '.join(skills_sample)}"
+                if len(skills_list) > 5:
                     skills_summary += " and more"
                 summary.append(skills_summary)
         

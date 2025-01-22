@@ -70,11 +70,6 @@ const formatFieldName = (field) => {
     .replace(/^./, str => str.toUpperCase());
 };
 
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://resume-extractor-backend.onrender.com/api/upload'  
-  : 'http://localhost:3001/api/upload';
-
-
 function App() {
   const [file, setFile] = useState(null);
   const [data, setData] = useState(null);
@@ -116,31 +111,14 @@ function App() {
     formData.append("pdf", file);
 
     try {
-      const response = await axios({
-        method: 'post',
-        url: API_URL,
-        data: formData,
+      const response = await axios.post("http://localhost:3001/api/upload", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          "Content-Type": "multipart/form-data",
         },
-        withCredentials: false,
-        timeout: 120000, // Increased timeout to 2 minutes
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity
       });
-      if (response.data) {
-        setData(response.data);
-      } else {
-        throw new Error('No data received');
-      }
+      setData(response.data);
     } catch (err) {
-      console.error('Upload Error Details:', err);
-      setError(
-        err.response?.data?.error || 
-        err.response?.data?.details || 
-        err.message || 
-        'Failed to process PDF'
-      );
+      setError(err.response?.data?.error || "An error occurred while processing the file");
     } finally {
       setLoading(false);
     }
