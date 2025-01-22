@@ -62,7 +62,7 @@ const dataCategories = {
   }
 };
 
-// Field name formatting
+// eslint-disable-next-line no-unused-vars
 const formatFieldName = (field) => {
   const name = field.split('.').pop(); // Handle nested fields
   return name
