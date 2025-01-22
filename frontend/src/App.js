@@ -116,17 +116,31 @@ function App() {
     formData.append("pdf", file);
 
     try {
-      const response = await axios.post(API_URL, formData, {
+      const response = await axios({
+        method: 'post',
+        url: API_URL,
+        data: formData,
         headers: {
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data'
         },
         withCredentials: false,
-        timeout: 60000
+        timeout: 120000, // Increased timeout to 2 minutes
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
       });
-      setData(response.data);
+      if (response.data) {
+        setData(response.data);
+      } else {
+        throw new Error('No data received');
+      }
     } catch (err) {
-      setError(err.response?.data?.error || "An error occurred while processing the file");
-      console.error('Upload Error:', err);
+      console.error('Upload Error Details:', err);
+      setError(
+        err.response?.data?.error || 
+        err.response?.data?.details || 
+        err.message || 
+        'Failed to process PDF'
+      );
     } finally {
       setLoading(false);
     }
