@@ -111,13 +111,19 @@ function App() {
     formData.append("pdf", file);
 
     try {
-      const response = await axios.post("http://localhost:3001/api/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/upload`, 
+        formData, 
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true
+        }
+      );
       setData(response.data);
     } catch (err) {
+      console.error("Upload Error Details:", err);
       setError(err.response?.data?.error || "An error occurred while processing the file");
     } finally {
       setLoading(false);

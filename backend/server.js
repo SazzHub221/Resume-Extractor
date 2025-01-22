@@ -11,15 +11,18 @@ const app = express();
 
 app.use(cors({
   origin: [
-    process.env.FRONTEND_URL, 
+    'https://resume-extractor-frontend.vercel.app',
     'http://localhost:3000',
-    'https://resume-extractor-phi.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-})); 
+  allowedHeaders: ['Content-Type', 'Authorization', 'multipart/form-data']
+}));
+
 app.use(express.json());
+
+// Make sure this is before your routes
+app.options('*', cors());
 
 // Configure multer with file filtering
 const storage = multer.diskStorage({
