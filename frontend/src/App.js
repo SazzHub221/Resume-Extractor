@@ -120,7 +120,7 @@ function App() {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        withCredentials: true,
+        withCredentials: false,
         timeout: 60000
       });
       setData(response.data);

@@ -16,8 +16,10 @@ if (!fs.existsSync(uploadsDir)){
 
 // Updated CORS
 app.use(cors({
-  origin: '*',  // Allow all origins temporarily for testing
-  credentials: false
+  origin: 'https://resume-extractor-frontend.vercel.app',
+  methods: ['POST', 'GET', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+  credentials: true
 }));
 
 app.use(express.json());
