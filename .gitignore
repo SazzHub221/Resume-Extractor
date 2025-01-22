@@ -16,8 +16,12 @@ node_modules/
 /frontend/build
 /backend/dist
 
+# Python
+/backend/python/__pycache__/
+/backend/python/*.pyc
+
 # Misc
 .DS_Store
 .vercel
 *.log
-uploads/
+/backend/uploads/

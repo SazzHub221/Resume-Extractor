@@ -75,7 +75,7 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
 
   const pdfPath = req.file.path;
   const pythonProcess = spawn("python", [
-    path.join(__dirname, "..", "python", "extractor.py"),
+    path.join(__dirname, "python", "extractor.py"),
     pdfPath
   ]);
 
