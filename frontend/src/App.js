@@ -110,9 +110,12 @@ function App() {
     const formData = new FormData();
     formData.append("pdf", file);
 
+    // Add API URL with fallback
+    const API_URL = process.env.REACT_APP_API_URL || 'https://resume-extractor-backend.onrender.com/api';
+
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL1}/upload`, 
+        `${API_URL}/upload`, 
         formData, 
         {
           headers: {
