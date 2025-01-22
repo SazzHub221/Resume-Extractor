@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
+import { config } from './config';
 
 // Add these SVG icons as components
 const UploadIcon = () => (
@@ -110,12 +111,9 @@ function App() {
     const formData = new FormData();
     formData.append("pdf", file);
 
-    // Add API URL with fallback
-    const API_URL = process.env.REACT_APP_API_URL || 'https://resume-extractor-backend.onrender.com/api';
-
     try {
       const response = await axios.post(
-        `${API_URL}/upload`, 
+        `${config.API_URL}/upload`, 
         formData, 
         {
           headers: {
