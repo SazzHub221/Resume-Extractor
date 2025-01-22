@@ -12,7 +12,7 @@ const app = express();
 app.use(cors({
   origin: [
     'https://resume-extractor-frontend.vercel.app',
-    'http://localhost:3000',
+    'http://localhost:3000'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -21,7 +21,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Make sure this is before your routes
+// Add preflight handling
 app.options('*', cors());
 
 // Configure multer with file filtering
