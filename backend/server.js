@@ -24,9 +24,15 @@ app.use(express.json());
 // Add preflight handling
 app.options('*', cors());
 
+// Add this before configuring multer
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Configure multer with file filtering
 const storage = multer.diskStorage({
-  destination: "uploads/",
+  destination: uploadsDir,  // Use the constant instead of string
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + '.pdf');
@@ -71,24 +77,35 @@ const cleanupUploads = () => {
 
 setInterval(cleanupUploads, 3600000); // Run cleanup every hour
 
+// Add a base path for all API routes
+app.use('/api', express.Router());
+
+// Update the upload route to include /api
 app.post("/api/upload", upload.single("pdf"), (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: "No PDF file uploaded" });
+    return res.status(400).json({ 
+      error: "No PDF file uploaded",
+      details: "Please ensure you're sending a PDF file with the field name 'pdf'"
+    });
   }
 
   const pdfPath = req.file.path;
+  console.log('Processing PDF:', pdfPath); // Add logging
+
   const pythonProcess = spawn("python", [
     path.join(__dirname, "python", "extractor.py"),
     pdfPath
   ]);
 
   let resultData = "";
+  let errorData = "";
 
   pythonProcess.stdout.on("data", (data) => {
     resultData += data.toString();
   });
 
   pythonProcess.stderr.on("data", (data) => {
+    errorData += data.toString();
     console.error(`Python error: ${data}`);
   });
 
@@ -102,7 +119,8 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
       if (code !== 0) {
         return res.status(500).json({ 
           error: "Processing error", 
-          details: resultData 
+          details: errorData || resultData,
+          code: code
         });
       }
 
@@ -113,10 +131,17 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
       console.error("Error parsing Python output:", error);
       res.status(500).json({ 
         error: "Error processing result",
-        details: error.message 
+        details: error.message,
+        pythonOutput: resultData,
+        pythonError: errorData
       });
     }
   });
+});
+
+// Add a test route to verify API is working
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working' });
 });
 
 // Error handling middleware
