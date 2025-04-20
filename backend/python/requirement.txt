@@ -1,2 +1,8 @@
 pdfplumber
 spacy
+python-dotenv
+PyMuPDF
+google-generativeai
+groq
+# Pin protobuf to a version compatible with tensorflow‑intel & tensorflow‑serving-api
+protobuf>=3.20.3,<5.0.0dev,!=4.21.*

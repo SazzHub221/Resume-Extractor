@@ -92,10 +92,10 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
   const pdfPath = req.file.path;
   console.log('Processing PDF:', pdfPath); // Add logging
 
-  const pythonProcess = spawn("python", [
-    path.join(__dirname, "python", "extractor.py"),
-    pdfPath
-  ]);
+  const pythonPath = "F:/Projects/pdf-extractor/backend/python/venv/Scripts/python.exe";
+  const scriptPath = path.join(__dirname, "python", "extractor.py");
+
+  const pythonProcess = spawn(pythonPath, [scriptPath, pdfPath]);
 
   let resultData = "";
   let errorData = "";

@@ -9,8 +9,16 @@ from pathlib import Path
 from gemini_service import GeminiService
 from dotenv import load_dotenv
 import os
-import fitz  # PyMuPDF
+import fitz
 
+import warnings
+# ignore only pdfplumber CropBox warnings
+warnings.filterwarnings(
+    "ignore",
+    message=r".*CropBox missing from /Page.*",
+    category=UserWarning,
+    module="pdfplumber"
+)
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
